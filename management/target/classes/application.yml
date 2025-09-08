@@ -1,0 +1,24 @@
+#配置数据库的连接信息
+spring:
+  application:
+    name: management
+  datasource:
+    url: jdbc:mysql://localhost:3306/management
+#    url: jdbc:mysql://192.168.100.128:3306/management
+    diver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+#    password: 1234
+
+
+#mabatis的配置
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #开启驼峰命名转换
+    map-underscore-to-camel-case: true
+
+#配置事务管理日志级别
+logging:
+  level:
+    org.springframework.jdbc.support.JdbcTransactionManager: debug

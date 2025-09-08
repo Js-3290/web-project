@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.js.mapper.UserMapper">
+    <delete id="deleteByIds">
+        delete from user where id in
+        <foreach item="id" collection="ids" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+
+    </delete>
+
+    <!--    查询用户性别数据-->
+    <select id="countUserGenderData" resultType="java.util.Map">
+        SELECT if(gender = 1, '男性用户', '女性用户') name,
+               count(*) value
+        from user
+        group by gender;
+    </select>
+
+    <select id="list" resultType="com.js.pojo.User">
+        SELECT * FROM user
+        <where>
+            <if test="name != null and name != ''">
+                name like concat('%',#{name},'%')
+            </if>
+            <if test="gender != null">
+                and gender = #{gender}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

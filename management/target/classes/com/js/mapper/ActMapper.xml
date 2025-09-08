@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.js.mapper.ActMapper">
+    <!--    新增活动-->
+    <insert id="insert">
+        insert into activity(name, type_id, start_time, end_time, location, max_people, description, status,
+                             create_time, creator_id)
+        values (#{name}, #{typeId}, #{startTime}, #{endTime}, #{location}, #{maxPeople}, #{description},
+                # 判断当前时间是否在活动时间段内
+        IF(NOW() BETWEEN #{startTime} AND #{endTime}, 2,
+                    IF(NOW() > #{endTime}, 3, 1)), #{createTime}, #{creatorId});
+    </insert>
+
+    <!--    根据id更新活动信息-->
+    <update id="updateById">
+        UPDATE activity
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="typeId != null ">type_id = #{typeId},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null ">end_time = #{endTime},</if>
+            <if test="location != null and location != ''">location = #{location},</if>
+            <if test="maxPeople != null">max_people = #{maxPeople},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <!-- status 字段根据时间自动计算，不依赖传入的参数 -->
+            <if test="startTime!= null and endTime != null">
+                status = CASE
+                WHEN NOW() BETWEEN #{startTime} AND #{endTime} THEN 2
+                WHEN NOW() > #{endTime} THEN 3
+                ELSE 1
+                END,
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--    更新当前参与人数-->
+    <update id="updateCurrentPeople">
+        UPDATE activity
+        SET current_people =current_people + 1 WHERE id = #{activityId}
+    </update>
+
+    <update id="updateCurrentPeople2">
+        UPDATE activity
+        SET current_people =current_people - 1 WHERE id = #{activityId}
+    </update>
+
+    <!--    批量删除活动基本信息-->
+    <delete id="deleteByIds">
+        delete from activity where id in
+        <foreach item="id" collection="ids" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="list" resultType="com.js.pojo.Activity">
+        SELECT a.*, u.name creatorName, at.name typeName
+        FROM activity a
+        left JOIN user u ON a.creator_id = u.id
+        LEFT JOIN activity_type at ON a.type_id = at.id
+        <where>
+            <if test="name != null and name != ''">
+                a.name like concat('%',#{name},'%')
+            </if>
+            <if test="typeId != null">
+                and a.type_id=#{typeId}
+            </if>
+            <if test="begin != null and end != null">
+                and a.start_time between #{begin} and #{end}
+            </if>
+        </where>
+        order by a.create_time desc
+    </select>
+
+    <!--    根据id查询活动信息-->
+    <select id="getById" resultType="com.js.pojo.Activity">
+        SELECT a.*, u.name creatorName, at.name typeName
+        FROM activity a
+                 left join user u on a.creator_id = u.id
+                 left join activity_type at
+        on a.type_id = at.id
+        where a.id = #{id};
+    </select>
+
+    <!--    统计活动类型-->
+    <select id="countActivityTypeData" resultType="java.util.Map">
+        SELECT at.name as typeName, count(*) num
+        FROM activity a
+                 left join activity_type at
+        on a.type_id = at.id
+        group by a.type_id
+        order by num
+    </select>
+
+    <select id="getByCreatorId" resultType="com.js.pojo.Activity">
+        SELECT a.*, u.name creatorName, at.name typeName
+        FROM activity a
+                 left join user u on a.creator_id = u.id
+                 left join activity_type at
+        on a.type_id = at.id
+        where creator_id = #{creatorId};
+    </select>
+
+</mapper>
