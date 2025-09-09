@@ -7,6 +7,7 @@ import com.js.pojo.ActQueryParam;
 import com.js.pojo.Activity;
 import com.js.pojo.PageResult;
 import com.js.service.ActService;
+import com.js.service.ActivityApprovalService;
 import com.js.utils.CurrentHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,10 @@ public class ActServiceImpl implements ActService {
 
     @Autowired
     private ActMapper actMapper;
+
+    @Autowired
+    private ActivityApprovalService activityApprovalService;
+
 
     /**
      * PageHelper
@@ -71,6 +76,10 @@ public class ActServiceImpl implements ActService {
         //activity.setCreatorId(CurrentHolder.getCurrentId());
         //System.out.println("活动创建者id："+activity.getCreatorId());
         actMapper.updateById(activity);
+
+        // 创建审批记录
+        activityApprovalService.createApproval(activity.getId());
+
     }
 
 

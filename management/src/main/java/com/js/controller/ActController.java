@@ -1,10 +1,8 @@
 package com.js.controller;
 
-import com.js.pojo.ActQueryParam;
-import com.js.pojo.Activity;
-import com.js.pojo.PageResult;
-import com.js.pojo.Result;
+import com.js.pojo.*;
 import com.js.service.ActService;
+import com.js.service.ActivityApprovalService;
 import com.js.utils.CurrentHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +23,10 @@ public class ActController {
 
     @Autowired
     private ActService actService;
+
+    @Autowired
+    private ActivityApprovalService activityApprovalService;
+
 
     /**
      * 分页查询
@@ -99,6 +101,16 @@ public class ActController {
         log.info("根据创建人id查询活动 {}",creatorId);
         List<Activity> activities=actService.getByCreatorId(creatorId);
         return Result.success(activities);
+    }
+
+    /**
+     * 获取活动审批状态
+     */
+    @GetMapping("/{id}/approval")
+    public Result getApprovalStatus(@PathVariable Integer id) {
+        log.info("获取活动审批状态，activityId={}", id);
+        ActivityApproval activityApproval = activityApprovalService.getByActivityId(id);
+        return Result.success(activityApproval);
     }
 
 }
